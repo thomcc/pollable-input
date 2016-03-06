@@ -1,8 +1,8 @@
 {
   "name": "pollable-input",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Key and mouse input handling library that allows polling the current state.",
-  "main": "index.js",
+  "main": "pollable-input.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
