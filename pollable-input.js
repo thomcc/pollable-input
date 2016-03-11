@@ -3,7 +3,7 @@ var Input = (function() {
 
 	var KEYS = [];
 	var MOUSE_BUTTONS = [];
-
+	var KEYMAX = 255;
 	var mouseRootElement = null;
 
 	function Button() {
@@ -87,8 +87,6 @@ var Input = (function() {
 		}
 	}());
 
-
-
 	function keyToCode(key) {
 		var code = 0;
 		if (typeof key === 'number') {
@@ -111,7 +109,6 @@ var Input = (function() {
 		}
 		return code;
 	}
-
 
 	function initKeyboard() {
 		window.addEventListener('keydown', function(e) {
@@ -157,9 +154,13 @@ var Input = (function() {
 		if (!mouseRootElement) {
 			return;
 		}
-		var rect = mouseRootElement.getBoundingClientRect();
-		var mx = x - rect.left;
-		var my = y - rect.top;
+		var mx = x;
+		var my = y;
+		if (mouseRootElement !== window) {
+			var rect = mouseRootElement.getBoundingClientRect();
+			mx = x - rect.left;
+			my = y - rect.top;
+		}
 		Input.mousePos[0] = mx;
 		Input.mousePos[1] = my;
 		Input.mouseDelta[0] = mx-Input.mouseLastPos[0];
@@ -172,8 +173,8 @@ var Input = (function() {
 			console.warn && console.warn("Unknown button ", btn);
 		}
 		else {
-			if (b.isDown) {
-				b.isDown = false;
+			if (!b.isDown) {
+				b.isDown = true;
 				++b.transitions;
 			}
 			if (b.defaultPrevented) {
@@ -220,17 +221,17 @@ var Input = (function() {
 		INVERSE_KEY_CODES: KeycodeInverse,
 
 		testMouse: function testMouse(btn) {
-			var b = MOUSE_BUTTONS[btn || 0];
+			var b = MOUSE_BUTTONS[btn == null ? 1 : btn];
 			return !!b && b.isDown;
 		},
 
 		testMouseDown: function testMouseDown(btn) {
-			var b = MOUSE_BUTTONS[btn || 0];
+			var b = MOUSE_BUTTONS[btn == null ? 1 : btn];
 			return !!b && b.testDown();
 		},
 
 		testMouseUp: function testMouseUp(btn) {
-			var b = MOUSE_BUTTONS[btn || 0];
+			var b = MOUSE_BUTTONS[btn == null ? 1 : btn];
 			return !!b && b.testUp();
 		},
 
@@ -263,25 +264,10 @@ var Input = (function() {
 		},
 
 		setMouseRootElement: function setMouseRootElement(elem) {
-			if (mouseRootElement != null) {
-				mouseRootElement.removeEventListener('mousedown', onMouseDown);
-				mouseRootElement.removeEventListener('mouseup', onMouseUp);
-				mouseRootElement.removeEventListener('mousemove', onMouseMove);
-
-				mouseRootElement.removeEventListener('touchstart', onTouchBegin);
-				mouseRootElement.removeEventListener('touchend', onTouchEnd);
-				mouseRootElement.removeEventListener('touchmove', onTouchMove);
-			}
 			mouseRootElement = elem;
-			mouseRootElement.addEventListener('mousedown', onMouseDown);
-			mouseRootElement.addEventListener('mouseup', onMouseUp);
-			mouseRootElement.addEventListener('mousemove', onMouseMove);
-
-			mouseRootElement.addEventListener('touchstart', onTouchBegin);
-			mouseRootElement.addEventListener('touchend', onTouchEnd);
-			mouseRootElement.addEventListener('touchmove', onTouchMove);
 		}
 	};
+
 	// wait a bit and then bind the root events to window if
 	requestAnimationFrame(function() {
 		initKeyboard();
@@ -300,6 +286,14 @@ var Input = (function() {
 				b.transitions = 0;
 			});
 		});
+		window.addEventListener('mousedown', onMouseDown);
+		window.addEventListener('mouseup', onMouseUp);
+		window.addEventListener('mousemove', onMouseMove);
+
+		window.addEventListener('touchstart', onTouchBegin);
+		window.addEventListener('touchend', onTouchEnd);
+		window.addEventListener('touchmove', onTouchMove);
+
 	})
 
 	return Input;
